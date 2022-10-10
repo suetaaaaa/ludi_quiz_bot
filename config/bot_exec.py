@@ -1,0 +1,17 @@
+from aiogram import Bot, Dispatcher
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
+from dotenv import load_dotenv
+import os
+
+
+
+env_path = 'C:/dushu_pitona/Telegram/telegram_bots/QuizBot/config/.env'
+load_dotenv(dotenv_path=env_path)
+
+TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')
+
+storage = MemoryStorage()
+
+bot = Bot(token=TG_BOT_TOKEN)  # type: ignore
+dp = Dispatcher(bot, storage=storage)
