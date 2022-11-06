@@ -8,11 +8,11 @@ from database.db_connection import conn, cur
 
 
 async def next_poll(poll: PollAnswer):
-	username = poll.user.username
+	user_id = poll.user.id
 	
 	try:
 		questions = []
-		data = cur.execute(f'SELECT * FROM {username}')
+		data = cur.execute(f'SELECT * FROM user_{user_id}')
 		for value in data:
 			questions.append(value)
 
@@ -20,11 +20,11 @@ async def next_poll(poll: PollAnswer):
 		correct_answer = questions[0][6]
 		
 		if user_answer == correct_answer:
-			cur.execute(f'DELETE FROM {username} WHERE id = (SELECT id FROM {username} ORDER BY rowid ASC LIMIT 1)')
+			cur.execute(f'DELETE FROM user_{user_id} WHERE id = (SELECT id FROM user_{user_id} ORDER BY rowid ASC LIMIT 1)')
 			conn.commit()
 
 			questions = []
-			data = cur.execute(f'SELECT * FROM {username}')
+			data = cur.execute(f'SELECT * FROM user_{user_id}')
 			for value in data:
 				questions.append(value)
 
@@ -49,7 +49,7 @@ async def next_poll(poll: PollAnswer):
 		text_to_send = 'Отлично! Тебя ждёт подарок🎁'
 		await bot.send_message(chat_id=poll.user.id, text=text_to_send, reply_markup=inkb)
 
-		cur.execute(f'DROP TABLE {username}')
+		cur.execute(f'DROP TABLE IF EXISTS user_{user_id}')
 		conn.commit()
 
 

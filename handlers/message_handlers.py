@@ -7,7 +7,7 @@ from database.db_connection import cur
 
 
 async def cmd_start(msg: Message):
-	username = msg.from_user.username
+	user_id = msg.from_user.id
 
 	data = cur.execute('SELECT * FROM blacklist')
 
@@ -15,7 +15,7 @@ async def cmd_start(msg: Message):
 	for user in data:
 		banned_users.append(user[1])
 
-	if username not in banned_users:
+	if user_id not in banned_users:
 		adult_btn = InlineKeyboardButton(text='Я СТАРШЕ 18 ЛЕТ', callback_data='adult')
 		not_adult_btn = InlineKeyboardButton(text='МНЕ ЕЩЕ НЕТ 18', callback_data='not_adult')
 		inkb = InlineKeyboardMarkup(row_width=1).add(adult_btn).add(not_adult_btn)

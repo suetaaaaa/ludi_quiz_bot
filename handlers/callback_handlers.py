@@ -12,18 +12,20 @@ import random
 async def adult(call: CallbackQuery):
 	await call.message.delete()
 
+	user_id = call.from_user.id
+
 	start_btn = InlineKeyboardButton(text='НАЧАТЬ', callback_data='start_quiz')
 	rules_btn = InlineKeyboardButton(text='ПРАВИЛА', callback_data='rules')
 	inkb = InlineKeyboardMarkup(row_width=1).add(start_btn).add(rules_btn)
 	text_to_send = 'Уже знаешь правила? Тогда начинай!'
 
-	await bot.send_message(chat_id=call.from_user.id, text=text_to_send, reply_markup=inkb)
+	await bot.send_message(chat_id=user_id, text=text_to_send, reply_markup=inkb)
 
 
 async def not_adult(call: CallbackQuery):
-	username = call.from_user.username
+	user_id = call.from_user.id
 
-	cur.execute(f"INSERT INTO blacklist(username) VALUES('{username}')")
+	cur.execute(f"INSERT INTO blacklist(user_id) VALUES('{user_id}')")
 	conn.commit()
 	
 	await call.answer('Тебе сюда нельзя((', show_alert=True)
@@ -36,7 +38,7 @@ async def start_quiz(call: CallbackQuery):
 	await call.message.delete()
 
 
-	username = call.from_user.username
+	user_id = call.from_user.id
 
 	data = cur.execute('SELECT * FROM questions')
 
@@ -51,13 +53,13 @@ async def start_quiz(call: CallbackQuery):
 	
 	q_sql = ', '.join(questions)
 
-	cur.execute(f'DROP TABLE IF EXISTS {username}')
-	cur.execute(f'CREATE TABLE IF NOT EXISTS {username}(id INTEGER, question TEXT, answer_1 TEXT, answer_2 TEXT, answer_3 TEXT, answer_4 TEXT, correct_answer INTEGER, explanation TEXT)')
-	cur.execute(f'INSERT INTO {username} VALUES{q_sql}')
+	cur.execute(f'DROP TABLE IF EXISTS user_{user_id}')
+	cur.execute(f'CREATE TABLE IF NOT EXISTS user_{user_id}(id INTEGER, question TEXT, answer_1 TEXT, answer_2 TEXT, answer_3 TEXT, answer_4 TEXT, correct_answer INTEGER, explanation TEXT)')
+	cur.execute(f'INSERT INTO user_{user_id} VALUES{q_sql}')
 	conn.commit()
 
 	questions = []
-	data = cur.execute(f'SELECT * FROM {username}')
+	data = cur.execute(f'SELECT * FROM user_{user_id}')
 	for value in data:
 		questions.append(value)
 
@@ -74,6 +76,8 @@ async def start_quiz(call: CallbackQuery):
 async def rules(call: CallbackQuery):
 	await call.message.delete()
 
+	user_id = call.from_user.id
+
 	data = cur.execute('SELECT * FROM rules')
 	rules = []
 	for rule in data:
@@ -84,7 +88,7 @@ async def rules(call: CallbackQuery):
 	inkb = InlineKeyboardMarkup(row_width=1).add(start_btn).add(rules_btn)
 	text_to_send = rules[0][0]
 
-	await bot.send_message(chat_id=call.from_user.id, text=text_to_send, reply_markup=inkb)
+	await bot.send_message(chat_id=user_id, text=text_to_send, reply_markup=inkb)
 
 
 
