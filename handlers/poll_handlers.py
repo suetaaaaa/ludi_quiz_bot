@@ -12,7 +12,7 @@ async def next_poll(poll: PollAnswer):
 	
 	try:
 		questions = []
-		data = cur.execute(f'SELECT * FROM user_{user_id}')
+		data = cur.execute(f'SELECT * FROM quiz_{user_id}')
 		for value in data:
 			questions.append(value)
 
@@ -20,11 +20,11 @@ async def next_poll(poll: PollAnswer):
 		correct_answer = questions[0][6]
 		
 		if user_answer == correct_answer:
-			cur.execute(f'DELETE FROM user_{user_id} WHERE id = (SELECT id FROM user_{user_id} ORDER BY rowid ASC LIMIT 1)')
+			cur.execute(f'DELETE FROM quiz_{user_id} WHERE id = (SELECT id FROM quiz_{user_id} ORDER BY rowid ASC LIMIT 1)')
 			conn.commit()
 
 			questions = []
-			data = cur.execute(f'SELECT * FROM user_{user_id}')
+			data = cur.execute(f'SELECT * FROM quiz_{user_id}')
 			for value in data:
 				questions.append(value)
 
@@ -43,13 +43,18 @@ async def next_poll(poll: PollAnswer):
 			text_to_send = 'Ой! Неверный ответ. Не расстраивайся, ты можешь пройти викторину ещё раз.'
 
 			await bot.send_message(chat_id=poll.user.id, text=text_to_send, reply_markup=inkb)
+
+			cur.execute(f'DELETE FROM user_{user_id} WHERE id IN (SELECT id FROM user_{user_id} LIMIT 7)')
+			cur.execute(f'DROP TABLE quiz_{user_id}')
+			conn.commit()
 	except:
 		adult_btn = InlineKeyboardButton(text='ЗАБРАТЬ ПРИЗ', url='https://narodnyclub.ru/', callback_data='winner')
 		inkb = InlineKeyboardMarkup(row_width=1).add(adult_btn)
 		text_to_send = 'Отлично! Тебя ждёт подарок🎁'
 		await bot.send_message(chat_id=poll.user.id, text=text_to_send, reply_markup=inkb)
 
-		cur.execute(f'DROP TABLE IF EXISTS user_{user_id}')
+		cur.execute(f'DROP TABLE user_{user_id}')
+		cur.execute(f'DROP TABLE quiz_{user_id}')
 		conn.commit()
 
 

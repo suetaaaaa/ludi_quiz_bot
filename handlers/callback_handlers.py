@@ -40,37 +40,73 @@ async def start_quiz(call: CallbackQuery):
 
 	user_id = call.from_user.id
 
-	data = cur.execute('SELECT * FROM questions')
 
-	questions = []
-	for value in data:
-		questions.append(str(value))
+	try:
+		cur.execute(f'CREATE TABLE user_{user_id}(id INTEGER, question TEXT, answer_1 TEXT, answer_2 TEXT, answer_3 TEXT, answer_4 TEXT, correct_answer INTEGER, explanation TEXT)')
+		conn.commit()
 
-	random.shuffle(questions)
+		data = cur.execute('SELECT * FROM questions')
+		questions = []
+		for value in data:
+			questions.append(str(value))
 
-	while len(questions) > 7:
-		questions.pop()
-	
-	q_sql = ', '.join(questions)
+		random.shuffle(questions)
+		q_sql = ', '.join(questions)
+		
+		cur.execute(f'INSERT INTO user_{user_id} VALUES{q_sql}')
+		conn.commit()
+	except:
+		pass
 
-	cur.execute(f'DROP TABLE IF EXISTS user_{user_id}')
-	cur.execute(f'CREATE TABLE IF NOT EXISTS user_{user_id}(id INTEGER, question TEXT, answer_1 TEXT, answer_2 TEXT, answer_3 TEXT, answer_4 TEXT, correct_answer INTEGER, explanation TEXT)')
-	cur.execute(f'INSERT INTO user_{user_id} VALUES{q_sql}')
+
+	cur.execute(f'CREATE TABLE quiz_{user_id} AS SELECT * FROM user_{user_id} LIMIT 7')
 	conn.commit()
-
+		
+	data = cur.execute(f'SELECT * FROM quiz_{user_id}')
 	questions = []
-	data = cur.execute(f'SELECT * FROM user_{user_id}')
 	for value in data:
 		questions.append(value)
 
-	await call.message.answer_poll(
-		question=questions[0][1],
-		options=[questions[0][2], questions[0][3], questions[0][4], questions[0][5]],
-		type='quiz',
-		correct_option_id=questions[0][6],
-		is_anonymous=False,
-		explanation=questions[0][7]
-	)
+	if len(questions) == 7:
+		await call.message.answer_poll(
+			question=questions[0][1],
+			options=[questions[0][2], questions[0][3], questions[0][4], questions[0][5]],
+			type='quiz',
+			correct_option_id=questions[0][6],
+			is_anonymous=False,
+			explanation=questions[0][7]
+		)
+	else:
+		cur.execute(f'DROP TABLE user_{user_id}')
+		cur.execute(f'DROP TABLE quiz_{user_id}')
+		conn.commit()
+
+		data = cur.execute('SELECT * FROM questions')
+		questions = []
+		for value in data:
+			questions.append(str(value))
+
+		random.shuffle(questions)
+		q_sql = ', '.join(questions)
+
+		cur.execute(f'CREATE TABLE user_{user_id}(id INTEGER, question TEXT, answer_1 TEXT, answer_2 TEXT, answer_3 TEXT, answer_4 TEXT, correct_answer INTEGER, explanation TEXT)')
+		cur.execute(f'INSERT INTO user_{user_id} VALUES{q_sql}')
+		cur.execute(f'CREATE TABLE quiz_{user_id} AS SELECT * FROM user_{user_id} LIMIT 7')
+		conn.commit()
+			
+		data = cur.execute(f'SELECT * FROM quiz_{user_id}')
+		questions = []
+		for value in data:
+			questions.append(value)
+
+		await call.message.answer_poll(
+			question=questions[0][1],
+			options=[questions[0][2], questions[0][3], questions[0][4], questions[0][5]],
+			type='quiz',
+			correct_option_id=questions[0][6],
+			is_anonymous=False,
+			explanation=questions[0][7]
+		)
 
 
 async def rules(call: CallbackQuery):
