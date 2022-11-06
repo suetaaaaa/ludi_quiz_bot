@@ -13,7 +13,7 @@ import random
 
 @dp.message_handler(commands=['quiz'], state=None)
 async def start_quiz(msg: Message):
-	username = msg.from_user.username
+	user_id = msg.from_user.id
 
 	data = cur.execute('SELECT * FROM questions')
 
@@ -24,13 +24,13 @@ async def start_quiz(msg: Message):
 	random.shuffle(questions)
 	q_sql = ', '.join(questions)
 
-	cur.execute(f'DROP TABLE IF EXISTS {username}')
-	cur.execute(f'CREATE TABLE IF NOT EXISTS {username}(id INTEGER, question TEXT, answer_1 TEXT, answer_2 TEXT, answer_3 TEXT, answer_4 TEXT, correct_answer TEXT)')
-	cur.execute(f'INSERT INTO {username} VALUES{q_sql}')
+	cur.execute(f'DROP TABLE IF EXISTS user_{user_id}')
+	cur.execute(f'CREATE TABLE IF NOT EXISTS user_{user_id}(id INTEGER, question TEXT, answer_1 TEXT, answer_2 TEXT, answer_3 TEXT, answer_4 TEXT, correct_answer TEXT)')
+	cur.execute(f'INSERT INTO user_{user_id} VALUES{q_sql}')
 	conn.commit()
 	
 	questions = []
-	data = cur.execute(f'SELECT * FROM {username}')
+	data = cur.execute(f'SELECT * FROM user_{user_id}')
 	for value in data:
 		questions.append(value)
 	
@@ -48,11 +48,11 @@ async def start_quiz(msg: Message):
 
 @dp.message_handler(state=Quiz.Q1)
 async def get_new_question(msg: Message, state: FSMContext):
-	username = msg.from_user.username
+	user_id = msg.from_user.id
 
 	try:
 		questions = []
-		data = cur.execute(f'SELECT * FROM {username}')
+		data = cur.execute(f'SELECT * FROM user_{user_id}')
 		for value in data:
 			questions.append(value)
 
@@ -60,11 +60,11 @@ async def get_new_question(msg: Message, state: FSMContext):
 		correct_answer = questions[0][6]
 
 		if user_answer == correct_answer:
-			cur.execute(f'DELETE FROM {username} WHERE id = (SELECT id FROM {username} ORDER BY rowid ASC LIMIT 1)')
+			cur.execute(f'DELETE FROM user_{user_id} WHERE id = (SELECT id FROM user_{user_id} ORDER BY rowid ASC LIMIT 1)')
 			conn.commit()
 
 			questions = []
-			data = cur.execute(f'SELECT * FROM {username}')
+			data = cur.execute(f'SELECT * FROM user_{user_id}')
 			for value in data:
 				questions.append(value)
 
@@ -89,7 +89,7 @@ async def get_new_question(msg: Message, state: FSMContext):
 	except:
 		text_to_send = 'Молодец, ты справился!🥳'
 
-		cur.execute(f'DROP TABLE {username}')
+		cur.execute(f'DROP TABLE user_{user_id}')
 		conn.commit()
 		
 		await msg.answer(text=text_to_send, reply_markup=ReplyKeyboardRemove())
