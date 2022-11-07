@@ -136,6 +136,6 @@ async def rules(call: CallbackQuery):
 
 def register_callback_handlers(dp: Dispatcher):
 	dp.register_callback_query_handler(adult, text='adult', state=Polls.start)
-	dp.register_callback_query_handler(not_adult, text='not_adult')
+	dp.register_callback_query_handler(not_adult, text='not_adult', state='*')
 	dp.register_callback_query_handler(start_quiz, text='start_quiz', state=Polls.start)
-	dp.register_callback_query_handler(rules, text='rules')
+	dp.register_callback_query_handler(rules, text='rules', state='*')

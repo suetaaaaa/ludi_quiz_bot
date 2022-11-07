@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from aiogram import Dispatcher
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
@@ -13,7 +11,7 @@ async def cmd_start(msg: Message):
 	user_id = msg.from_user.id
 
 	data = cur.execute('SELECT * FROM blacklist')
-	privileged_users = [432172171, 1023410847] # удалить
+	privileged_users = [432172171, 1023410847]  # удалить
 
 	banned_users = []
 	for user in data:
@@ -33,4 +31,4 @@ async def cmd_start(msg: Message):
 
 
 def register_message_handlers(dp: Dispatcher):
-	dp.register_message_handler(cmd_start, commands=['start'])
+	dp.register_message_handler(cmd_start, commands=['start'], state=None)
