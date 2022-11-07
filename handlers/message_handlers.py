@@ -1,19 +1,19 @@
 from datetime import datetime
+
 from aiogram import Dispatcher
-from aiogram.types import Message, \
-						InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from database.db_connection import cur
+from states.polls import Polls
 
-from datetime import datetime
+
 
 async def cmd_start(msg: Message):
+
 	user_id = msg.from_user.id
 
 	data = cur.execute('SELECT * FROM blacklist')
-
 	privileged_users = [432172171, 1023410847] # удалить
-	print(user_id, msg.from_user.username, msg.from_user.full_name, datetime.now()) # удалить
 
 	banned_users = []
 	for user in data:
@@ -26,6 +26,7 @@ async def cmd_start(msg: Message):
 		text_to_send = f'Привет, {msg.from_user.first_name}!\n🔞Подтверди свой возраст🔞'
 
 		await msg.answer(text_to_send, reply_markup=inkb)
+		await Polls.start.set()
 	else:
 		pass
 

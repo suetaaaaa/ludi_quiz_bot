@@ -1,9 +1,7 @@
 from aiogram.utils import executor
 
 from config.bot_exec import dp
-from handlers import message_handlers, callback_handlers, poll_handlers
-
-
+from handlers import callback_handlers, message_handlers, poll_handlers
 
 message_handlers.register_message_handlers(dp)
 callback_handlers.register_callback_handlers(dp)
