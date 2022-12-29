@@ -3,6 +3,7 @@ from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
                            PollAnswer)
 
 from config.bot_exec import bot, dp
+from config.consts import PRIZE_URL
 from database.db_connection import conn, cur
 from filters.state_filter import IsQuestionsState
 from states.polls import Polls
@@ -48,7 +49,7 @@ async def next_poll(poll: PollAnswer):
 			)
 		except:
 			if state_data['correct_answers'] >= 3:
-				adult_btn = InlineKeyboardButton(text='ЗАБРАТЬ ПРИЗ', url='https://narodnyclub.ru/', callback_data='winner')
+				adult_btn = InlineKeyboardButton(text='ЗАБРАТЬ ПРИЗ', url=PRIZE_URL, callback_data='winner')
 				inkb = InlineKeyboardMarkup(row_width=1).add(adult_btn)
 				text_to_send = 'Отлично! Тебя ждёт подарок🎁'
 
